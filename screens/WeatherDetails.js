@@ -11,7 +11,8 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
-import * as ScreenOrientation from 'expo-screen-orientation';
+import {MediaQuery} from "react-native-responsive-ui";
+
 
 function WeatherDetails() {
   const iconMapping = {
@@ -92,6 +93,8 @@ function WeatherDetails() {
   }, []);
 
   return (
+    <>
+    <MediaQuery orientation="portrait">
     <ScrollView style={styles.ScrollView}>
       <View style={styles.container}>
         <LinearGradient
@@ -195,13 +198,135 @@ function WeatherDetails() {
                   </View>
                 ))
               ) : (
-                <Text>Loading...</Text>
+                <View style={styles.earthquakeContainerLoading}>
+                  <Text style={styles.loadingText}>Loading earthquake data...</Text>
+                </View>
               )}
             </View>
           </View>
         </LinearGradient>
       </View>
     </ScrollView>
+    </MediaQuery>
+    <MediaQuery orientation="landscape">
+    <ScrollView style={landscape.ScrollView}>
+      <View style={landscape.container}>
+        <LinearGradient
+          colors={["#5735b2", "#4d32a4", "#4b31a2", "#462f9a"]}
+          locations={[0.07, 0.37, 0.61, 0.84]}
+          style={landscape.linearGradient}>
+          <View style={landscape.bigContainer}>
+            <Text style={landscape.title}>Weather App</Text>
+            <TextInput
+              style={landscape.input}
+              placeholder="Search for a place"
+              placeholderTextColor="#EBEBF5"
+              defaultValue={city}
+              onChangeText={setCity}
+            />
+
+            <TouchableOpacity
+              style={landscape.button}
+              onPress={() => {
+                fetchWeather();
+                forecastWeather();
+              }}>
+              <Text style={landscape.buttonText}>Get Weather</Text>
+            </TouchableOpacity>
+            {weather && main && (
+              <View style={landscape.weatherContainer}>
+                <View style={landscape.left}>
+                  <Text style={landscape.weatherTempText}>
+                    {parseFloat(weather.main.temp).toFixed(0)}°
+                  </Text>
+                  <View>
+                    <Text style={landscape.weatherMaxLowText}>
+                      H: {main.temp_max}° L: {main.temp_min}°
+                    </Text>
+                    <Text style={landscape.weatherText}>
+                      {weather.name}, {weather.sys.country}{" "}
+                    </Text>
+                  </View>
+                </View>
+                <View style={landscape.right}>
+                  <Image
+                    source={iconMapping[weather.weather[0].icon]}
+                    style={landscape.image}
+                  />
+                  <Text style={landscape.weatherText}>
+                    {weather.weather[0].main}
+                  </Text>
+                </View>
+              </View>
+            )}
+            <View>
+              {forecastList && forecastList.list && (
+                <>
+                  <Text style={landscape.title}>7-Day Forecast</Text>
+
+                  <ScrollView horizontal>
+                    {forecastList.list.map((forecast, index) => (
+                      <LinearGradient
+                        key={index}
+                        colors={["#1C2547", "#503F9D", "#8250AC"]}
+                        style={landscape.forecastContainer}>
+                        <Text style={landscape.forecastText}>
+                          {parseFloat(forecast.main.temp).toFixed(0)}°
+                        </Text>
+
+                        <Image
+                          source={iconMapping[forecast.weather[0].icon]}
+                          style={landscape.forecastImage}
+                        />
+                        <Text style={landscape.forecastTempText}>
+                          {forecast.dt_txt.split(" ")[0]}
+                        </Text>
+                      </LinearGradient>
+                    ))}
+                  </ScrollView>
+                </>
+              )}
+            </View>
+            <View>
+              <Text style={landscape.title}>Top 5 Most Recent Earthquakes</Text>
+              {earthquakeData ? (
+                earthquakeData.features.map((earthquake, index) => (
+                  <View key={index} style={landscape.earthquakeContainer}>
+                    <View style={landscape.left2}>
+                      <Text style={landscape.magText}>Magnitude:</Text>
+                      <Text style={landscape.magnitude}>
+                        {parseFloat(earthquake.properties.mag).toFixed(1)}
+                      </Text>
+                    </View>
+                    <View style={landscape.right2}>
+                    <Text style={landscape.magText}>Location:</Text>
+                      <Text style={landscape.name}>
+                        {earthquake.properties.place}
+                      </Text>
+                      <Text style={landscape.magText}>Coordinates:</Text>
+                      <Text style={landscape.location}>
+                        {earthquake.geometry.coordinates[1]},{" "}
+                        {earthquake.geometry.coordinates[0]}
+                      </Text>
+                      <Text style={landscape.magText}>Depths:</Text>
+                      <Text style={landscape.depth}>
+                        {earthquake.geometry.coordinates[2]} km
+                      </Text>
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <View style={landscape.earthquakeContainerLoading}>
+                  <Text style={landscape.loadingText}>Loading earthquake data...</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        </LinearGradient>
+      </View>
+    </ScrollView>
+    </MediaQuery>
+    </>
   );
 }
 const styles = StyleSheet.create({
@@ -307,6 +432,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4.65,
     elevation: 6,
   },
+  earthquakeContainerLoading: {
+    height: 600,
+    width: "100%",
+  },
   magnitude: {
     color: "white",
     fontSize: 24,
@@ -361,6 +490,188 @@ const styles = StyleSheet.create({
     fontSize: 36,
     color: "white",
   },
+  loadingText: {
+    width: "100%",
+    fontWeight: 700,
+    color: "#ffff",
+    fontSize: 24,
+  }
+});
+
+const landscape = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  left: {
+    flexDirection: "column",
+    width: "50%",
+    height: 170,
+    alignItems: "left",
+    marginLeft: 20,
+    justifyContent: "space-between",
+  },
+  right: {
+    flex: 1,
+    alignItems: "center",
+  },
+  bigContainer: {
+    marginLeft: 25,
+    marginRight: 25,
+  },
+  linearGradient: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 500,
+    marginTop: 100,
+    marginBottom: 25,
+    color: "white",
+    textAlign: "left",
+  },
+  input: {
+    width: "100%",
+    height: 40,
+    color: "white",
+    borderRadius: 12.38,
+    marginBottom: 10,
+    backgroundColor: "#2E335A",
+    paddingHorizontal: 10,
+  },
+  image: {
+    width: 120,
+    height: 120,
+    marginBottom: 10,
+  },
+  button: {
+    backgroundColor: "#6444b9",
+    padding: 10,
+    borderRadius: 12.38,
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "bold",
+  },
+  weatherContainer: {
+    marginTop: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#6444b9",
+    justifyContent: "center",
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.27,
+    shadowRadius: 4.65,
+    elevation: 6,
+  },
+  weatherText: {
+    fontSize: 18,
+    color: "white",
+    marginTop: 20,
+  },
+  weatherTempText: {
+    fontSize: 70,
+    marginTop: 15,
+    color: "white",
+  },
+  weatherMaxLowText: {
+    fontSize: 12,
+    color: "#afa2d9",
+  },
+  earthquakeContainer: {
+    marginTop: 20,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: "#6444b9",
+    justifyContent: "center",
+    borderRadius: 20,
+    padding: 20,
+    paddingBottom: 50,
+    paddingTop: 50,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.27,
+    shadowRadius: 4.65,
+    elevation: 6,
+  },
+  earthquakeContainerLoading: {
+    height: 600,
+    width: "100%",
+  },
+  magnitude: {
+    color: "white",
+    fontSize: 34,
+  },
+  ScrollView: {
+    flex: 1,
+  },
+  left2: {
+    width: "50%",
+    height: 100,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  right2: {
+    width: "50%",
+    height: 100,
+    justifyContent: "center",
+    alignItems: "flex-start",
+    marginLeft: 15,
+  },
+  name: {
+    color: "white",
+    fontSize: 16,
+  },
+  location: {
+    color: "white",
+  },
+  depth: {
+    color: "white",
+  },
+  forecastTempText: {
+    color: "white",
+  },
+  forecastImage: {
+    width: 60,
+    height: 60,
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  forecastContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+    padding: 7,
+    paddingTop: 30,
+    paddingBottom: 30,
+    borderRadius: 50,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+  },
+  forecastText: {
+    fontSize: 36,
+    color: "white",
+  },
+  loadingText: {
+    width: "100%",
+    fontWeight: 700,
+    color: "#ffff",
+    fontSize: 24,
+  },
+  magText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "white",
+  }
 });
 
 export default WeatherDetails;
