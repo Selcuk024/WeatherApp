@@ -10,6 +10,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import WeatherDetails from "./screens/WeatherDetails";
+import * as ScreenOrientation from 'expo-screen-orientation';
 
 
 export default function App() {

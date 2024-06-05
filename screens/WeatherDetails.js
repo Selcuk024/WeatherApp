@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
+import * as ScreenOrientation from 'expo-screen-orientation';
 
 function WeatherDetails() {
   const iconMapping = {
@@ -54,6 +55,7 @@ function WeatherDetails() {
       Alert.alert("Error", "City not found");
     }
   };
+
 
   const forecastWeather = async () => {
     try {
