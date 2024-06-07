@@ -8,11 +8,10 @@ import {
   Alert,
   Image,
   ScrollView,
+  useWindowDimensions,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
-import {MediaQuery} from "react-native-responsive-ui";
-
 
 function WeatherDetails() {
   const iconMapping = {
@@ -57,7 +56,6 @@ function WeatherDetails() {
     }
   };
 
-
   const forecastWeather = async () => {
     try {
       const response = await axios.get(
@@ -92,240 +90,200 @@ function WeatherDetails() {
     fetchEarthquakeData();
   }, []);
 
+  const { width, height } = useWindowDimensions();
+  const isPortrait = height > width;
+  
   return (
     <>
-    <MediaQuery orientation="portrait">
-    <ScrollView style={styles.ScrollView}>
-      <View style={styles.container}>
-        <LinearGradient
-          colors={["#5735b2", "#4d32a4", "#4b31a2", "#462f9a"]}
-          locations={[0.07, 0.37, 0.61, 0.84]}
-          style={styles.linearGradient}>
-          <View style={styles.bigContainer}>
-            <Text style={styles.title}>Weather App</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Search for a place"
-              placeholderTextColor="#EBEBF5"
-              defaultValue={city}
-              onChangeText={setCity}
-            />
+      <ScrollView style={isPortrait ? styles.ScrollView : landscape.ScrollView}>
+        <View style={isPortrait ? styles.container : landscape.container}>
+          <LinearGradient
+            colors={["#5735b2", "#4d32a4", "#4b31a2", "#462f9a"]}
+            locations={[0.07, 0.37, 0.61, 0.84]}
+            style={
+              isPortrait ? styles.linearGradient : landscape.linearGradient
+            }>
+            <View
+              style={isPortrait ? styles.bigContainer : landscape.bigContainer}>
+              <Text style={isPortrait ? styles.title : landscape.title}>
+                Weather App
+              </Text>
+              <TextInput
+                style={isPortrait ? styles.input : landscape.input}
+                placeholder="Search for a place"
+                placeholderTextColor="#EBEBF5"
+                defaultValue={city}
+                onChangeText={setCity}
+              />
 
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => {
-                fetchWeather();
-                forecastWeather();
-              }}>
-              <Text style={styles.buttonText}>Get Weather</Text>
-            </TouchableOpacity>
-            {weather && main && (
-              <View style={styles.weatherContainer}>
-                <View style={styles.left}>
-                  <Text style={styles.weatherTempText}>
-                    {parseFloat(weather.main.temp).toFixed(0)}°
-                  </Text>
-                  <View>
-                    <Text style={styles.weatherMaxLowText}>
-                      H: {main.temp_max}° L: {main.temp_min}°
+              <TouchableOpacity
+                style={isPortrait ? styles.button : landscape.button}
+                onPress={() => {
+                  fetchWeather();
+                  forecastWeather();
+                }}>
+                <Text
+                  style={isPortrait ? styles.buttonText : landscape.buttonText}>
+                  Get Weather
+                </Text>
+              </TouchableOpacity>
+              {weather && main && (
+                <View
+                  style={
+                    isPortrait
+                      ? styles.weatherContainer
+                      : landscape.weatherContainer
+                  }>
+                  <View style={isPortrait ? styles.left : landscape.left}>
+                    <Text
+                      style={
+                        isPortrait
+                          ? styles.weatherTempText
+                          : landscape.weatherTempText
+                      }>
+                      {parseFloat(weather.main.temp).toFixed(0)}°
                     </Text>
-                    <Text style={styles.weatherText}>
-                      {weather.name}, {weather.sys.country}{" "}
+                    <View>
+                      <Text
+                        style={
+                          isPortrait
+                            ? styles.weatherMaxLowText
+                            : landscape.weatherMaxLowText
+                        }>
+                        H: {main.temp_max}° L: {main.temp_min}°
+                      </Text>
+                      <Text
+                        style={
+                          isPortrait
+                            ? styles.weatherText
+                            : landscape.weatherText
+                        }>
+                        {weather.name}, {weather.sys.country}{" "}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={isPortrait ? styles.right : landscape.right}>
+                    <Image
+                      source={iconMapping[weather.weather[0].icon]}
+                      style={isPortrait ? styles.image : landscape.image}
+                    />
+                    <Text
+                      style={
+                        isPortrait ? styles.weatherText : landscape.weatherText
+                      }>
+                      {weather.weather[0].main}
                     </Text>
                   </View>
                 </View>
-                <View style={styles.right}>
-                  <Image
-                    source={iconMapping[weather.weather[0].icon]}
-                    style={styles.image}
-                  />
-                  <Text style={styles.weatherText}>
-                    {weather.weather[0].main}
-                  </Text>
-                </View>
+              )}
+              <View>
+                {forecastList && forecastList.list && (
+                  <>
+                    <Text style={isPortrait ? styles.title : landscape.title}>
+                      7-Day Forecast
+                    </Text>
+
+                    <ScrollView horizontal>
+                      {forecastList.list.map((forecast, index) => (
+                        <LinearGradient
+                          key={index}
+                          colors={["#1C2547", "#503F9D", "#8250AC"]}
+                          style={
+                            isPortrait
+                              ? styles.forecastContainer
+                              : landscape.forecastContainer
+                          }>
+                          <Text
+                            style={
+                              isPortrait
+                                ? styles.forecastText
+                                : landscape.forecastText
+                            }>
+                            {parseFloat(forecast.main.temp).toFixed(0)}°
+                          </Text>
+
+                          <Image
+                            source={iconMapping[forecast.weather[0].icon]}
+                            style={
+                              isPortrait
+                                ? styles.forecastImage
+                                : landscape.forecastImage
+                            }
+                          />
+                          <Text
+                            style={
+                              isPortrait
+                                ? styles.forecastTempText
+                                : landscape.forecastTempText
+                            }>
+                            {forecast.dt_txt.split(" ")[0]}
+                          </Text>
+                        </LinearGradient>
+                      ))}
+                    </ScrollView>
+                  </>
+                )}
               </View>
-            )}
-            <View>
-              {forecastList && forecastList.list && (
-                <>
-                  <Text style={styles.title}>7-Day Forecast</Text>
-
-                  <ScrollView horizontal>
-                    {forecastList.list.map((forecast, index) => (
-                      <LinearGradient
-                        key={index}
-                        colors={["#1C2547", "#503F9D", "#8250AC"]}
-                        style={styles.forecastContainer}>
-                        <Text style={styles.forecastText}>
-                          {parseFloat(forecast.main.temp).toFixed(0)}°
+              <View>
+                <Text style={isPortrait ? styles.title : landscape.title}>
+                  Top 5 Most Recent Earthquakes
+                </Text>
+                {earthquakeData ? (
+                  earthquakeData.features.map((earthquake, index) => (
+                    <View
+                      key={index}
+                      style={
+                        isPortrait
+                          ? styles.earthquakeContainer
+                          : landscape.earthquakeContainer
+                      }>
+                      <View style={isPortrait ? styles.left2 : landscape.left2}>
+                        <Text
+                          style={
+                            isPortrait ? styles.magnitude : landscape.magnitude
+                          }>
+                          {parseFloat(earthquake.properties.mag).toFixed(1)}
                         </Text>
-
-                        <Image
-                          source={iconMapping[forecast.weather[0].icon]}
-                          style={styles.forecastImage}
-                        />
-                        <Text style={styles.forecastTempText}>
-                          {forecast.dt_txt.split(" ")[0]}
+                      </View>
+                      <View
+                        style={isPortrait ? styles.right2 : landscape.right2}>
+                        <Text style={isPortrait ? styles.name : landscape.name}>
+                          {earthquake.properties.place}
                         </Text>
-                      </LinearGradient>
-                    ))}
-                  </ScrollView>
-                </>
-              )}
-            </View>
-            <View>
-              <Text style={styles.title}>Top 5 Most Recent Earthquakes</Text>
-              {earthquakeData ? (
-                earthquakeData.features.map((earthquake, index) => (
-                  <View key={index} style={styles.earthquakeContainer}>
-                    <View style={styles.left2}>
-                      <Text style={styles.magnitude}>
-                        {parseFloat(earthquake.properties.mag).toFixed(1)}
-                      </Text>
+                        <Text
+                          style={
+                            isPortrait ? styles.location : landscape.location
+                          }>
+                          {earthquake.geometry.coordinates[1]},{" "}
+                          {earthquake.geometry.coordinates[0]}
+                        </Text>
+                        <Text
+                          style={isPortrait ? styles.depth : landscape.depth}>
+                          {earthquake.geometry.coordinates[2]} km
+                        </Text>
+                      </View>
                     </View>
-                    <View style={styles.right2}>
-                      <Text style={styles.name}>
-                        {earthquake.properties.place}
-                      </Text>
-                      <Text style={styles.location}>
-                        {earthquake.geometry.coordinates[1]},{" "}
-                        {earthquake.geometry.coordinates[0]}
-                      </Text>
-                      <Text style={styles.depth}>
-                        {earthquake.geometry.coordinates[2]} km
-                      </Text>
-                    </View>
-                  </View>
-                ))
-              ) : (
-                <View style={styles.earthquakeContainerLoading}>
-                  <Text style={styles.loadingText}>Loading earthquake data...</Text>
-                </View>
-              )}
-            </View>
-          </View>
-        </LinearGradient>
-      </View>
-    </ScrollView>
-    </MediaQuery>
-    <MediaQuery orientation="landscape">
-    <ScrollView style={landscape.ScrollView}>
-      <View style={landscape.container}>
-        <LinearGradient
-          colors={["#5735b2", "#4d32a4", "#4b31a2", "#462f9a"]}
-          locations={[0.07, 0.37, 0.61, 0.84]}
-          style={landscape.linearGradient}>
-          <View style={landscape.bigContainer}>
-            <Text style={landscape.title}>Weather App</Text>
-            <TextInput
-              style={landscape.input}
-              placeholder="Search for a place"
-              placeholderTextColor="#EBEBF5"
-              defaultValue={city}
-              onChangeText={setCity}
-            />
-
-            <TouchableOpacity
-              style={landscape.button}
-              onPress={() => {
-                fetchWeather();
-                forecastWeather();
-              }}>
-              <Text style={landscape.buttonText}>Get Weather</Text>
-            </TouchableOpacity>
-            {weather && main && (
-              <View style={landscape.weatherContainer}>
-                <View style={landscape.left}>
-                  <Text style={landscape.weatherTempText}>
-                    {parseFloat(weather.main.temp).toFixed(0)}°
-                  </Text>
-                  <View>
-                    <Text style={landscape.weatherMaxLowText}>
-                      H: {main.temp_max}° L: {main.temp_min}°
-                    </Text>
-                    <Text style={landscape.weatherText}>
-                      {weather.name}, {weather.sys.country}{" "}
+                  ))
+                ) : (
+                  <View
+                    style={
+                      isPortrait
+                        ? styles.earthquakeContainerLoading
+                        : landscape.earthquakeContainerLoading
+                    }>
+                    <Text
+                      style={
+                        isPortrait ? styles.loadingText : landscape.loadingText
+                      }>
+                      Loading earthquake data...
                     </Text>
                   </View>
-                </View>
-                <View style={landscape.right}>
-                  <Image
-                    source={iconMapping[weather.weather[0].icon]}
-                    style={landscape.image}
-                  />
-                  <Text style={landscape.weatherText}>
-                    {weather.weather[0].main}
-                  </Text>
-                </View>
+                )}
               </View>
-            )}
-            <View>
-              {forecastList && forecastList.list && (
-                <>
-                  <Text style={landscape.title}>7-Day Forecast</Text>
-
-                  <ScrollView horizontal>
-                    {forecastList.list.map((forecast, index) => (
-                      <LinearGradient
-                        key={index}
-                        colors={["#1C2547", "#503F9D", "#8250AC"]}
-                        style={landscape.forecastContainer}>
-                        <Text style={landscape.forecastText}>
-                          {parseFloat(forecast.main.temp).toFixed(0)}°
-                        </Text>
-
-                        <Image
-                          source={iconMapping[forecast.weather[0].icon]}
-                          style={landscape.forecastImage}
-                        />
-                        <Text style={landscape.forecastTempText}>
-                          {forecast.dt_txt.split(" ")[0]}
-                        </Text>
-                      </LinearGradient>
-                    ))}
-                  </ScrollView>
-                </>
-              )}
             </View>
-            <View>
-              <Text style={landscape.title}>Top 5 Most Recent Earthquakes</Text>
-              {earthquakeData ? (
-                earthquakeData.features.map((earthquake, index) => (
-                  <View key={index} style={landscape.earthquakeContainer}>
-                    <View style={landscape.left2}>
-                      <Text style={landscape.magText}>Magnitude:</Text>
-                      <Text style={landscape.magnitude}>
-                        {parseFloat(earthquake.properties.mag).toFixed(1)}
-                      </Text>
-                    </View>
-                    <View style={landscape.right2}>
-                    <Text style={landscape.magText}>Location:</Text>
-                      <Text style={landscape.name}>
-                        {earthquake.properties.place}
-                      </Text>
-                      <Text style={landscape.magText}>Coordinates:</Text>
-                      <Text style={landscape.location}>
-                        {earthquake.geometry.coordinates[1]},{" "}
-                        {earthquake.geometry.coordinates[0]}
-                      </Text>
-                      <Text style={landscape.magText}>Depths:</Text>
-                      <Text style={landscape.depth}>
-                        {earthquake.geometry.coordinates[2]} km
-                      </Text>
-                    </View>
-                  </View>
-                ))
-              ) : (
-                <View style={landscape.earthquakeContainerLoading}>
-                  <Text style={landscape.loadingText}>Loading earthquake data...</Text>
-                </View>
-              )}
-            </View>
-          </View>
-        </LinearGradient>
-      </View>
-    </ScrollView>
-    </MediaQuery>
+          </LinearGradient>
+        </View>
+      </ScrollView>
     </>
   );
 }
@@ -495,7 +453,7 @@ const styles = StyleSheet.create({
     fontWeight: 700,
     color: "#ffff",
     fontSize: 24,
-  }
+  },
 });
 
 const landscape = StyleSheet.create({
@@ -671,7 +629,7 @@ const landscape = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "white",
-  }
+  },
 });
 
 export default WeatherDetails;
